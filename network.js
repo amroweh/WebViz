@@ -155,36 +155,39 @@ function createNetworkGraph(width, height, id, data) {
     d.fy = null;
   }
 
-  // Function to zoom in on Nodes
-  async function enlargeNode(){
-    await setTimeout(()=>{},400)
-    
-    console.log("Enlarged!")
-    const radius = d3.select(this).attr('r')
-    console.log(radius)
-    d3.select(this).transition()
-        .duration(800)
-        .attr("r", radius*2);
-    
-    simulation.nodes(data.Nodes)
-      .on("tick", ticked);
-    
-    simulation.force("link").links(data.Links);
+  // Helper function for node enlargement, Allows to get initial radius and return it to enlarge and revert
+  // functions. On the first attempt, the radius and id for the hovered node is taken and saved in the zoomed
+  // Nodes array. On later attempts for each node, the value of the radius is extracted from this array
+  const zoomedNodes = []  
+  function getInitialRadius(nodeID, radius){
+    // Look for node in list
+    nodeInList = zoomedNodes.find(x => x.id === nodeID)
+    if(!nodeInList){ // If not found
+      let nodeInfo = {"id": nodeID, "initial_Radius": radius}
+      zoomedNodes.push(nodeInfo)
+      return radius
+    }
+    else return nodeInList.initial_Radius
   }
-  async function revertNode(){
-    await setTimeout(()=>{},800)
 
-    console.log("Back to Normal...")
+  // Function to zoom in on Nodes
+  function enlargeNode(){
     const radius = d3.select(this).attr('r')
-    console.log(radius)
+    console.log("Enlarged Radius = "+radius)    
     d3.select(this).transition()
-        .duration(400)
-        .attr("r", radius/2);
-
-    simulation.nodes(data.Nodes)
-      .on("tick", ticked);
-  
-    simulation.force("link").links(data.Links);
+        .duration(300)
+        .attr("r", (d)=>{
+          return getInitialRadius(d.id, radius)*2;
+        });
+  }
+  function revertNode(){
+    const radius = d3.select(this).attr('r')
+    console.log("Normal Radius = "+radius)    
+    d3.select(this).transition()
+        .duration(150)
+        .attr("r", (d) => {
+          return getInitialRadius(d.id, radius)
+        });
   }
 }
 
