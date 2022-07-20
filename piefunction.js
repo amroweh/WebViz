@@ -1,17 +1,19 @@
 var data = [2, 4, 8, 10];
 
-export function createPieChart(radius, data){
+export function createPieChart(radius, data, element){
+    
+    if(!data) return
     
     const width = radius * 2
     const height = radius * 2
 
-    var pie_area = d3.select('#pie-area')
-    pie_area.append('svg')
-        .attr('width', width)
-        .attr('height', height)
+    var pie_area = d3.select(element)
+    // pie_area.append('svg')
+    //     .attr('width', width)
+    //     .attr('height', height)
     
-    var svg = pie_area.select('svg')
-    var g = svg.append('g').attr('transform', 'translate('+width/2+','+height/2+')');
+    // var svg = pie_area.select('svg')
+    var g = pie-area.append('g').attr('transform', 'translate('+width/2+','+height/2+')');
     
     var color = d3.scaleOrdinal(['#4daf4a','#377eb8','#ff7f00','#984ea3','#e41a1c']);
     
@@ -35,5 +37,3 @@ export function createPieChart(radius, data){
     })
     .attr("d", arc);
 }
-
-createPieChart(100, data)

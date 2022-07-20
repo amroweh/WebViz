@@ -1,3 +1,8 @@
+import {createPieChart} from '/piefunction.js'
+import {createPie} from '/test.js'
+import {getPie} from '/test2.js'
+import {zoomNode} from '/test2.js'
+
 var data = {
   Nodes: [
     { id: 0, name: "Ali", money: 5000, children: null },
@@ -33,7 +38,7 @@ function createNetworkGraph(width, height, id, data) {
     )
     .force(
       "charge",
-      d3.forceManyBody().strength(-1900).theta(0.5).distanceMax(1500)
+      d3.forceManyBody().strength(-5000).theta(0.5).distanceMax(1500)
     )
     .force(
       "collision",
@@ -61,37 +66,46 @@ function createNetworkGraph(width, height, id, data) {
   var node = svg
     .append("g")
     .attr("class", "nodes")
-    .selectAll("circle")
+    .selectAll("g")
     .data(data.Nodes)
     .enter()
-    .append("circle")
-    .attr("r", (d) => (d.money > 10000 ? 45 : 35)) // Adjusts node radius based on money of the person
+    .append('g')
+    //.append("circle")
+    //.attr("r", (d) => (d.money > 10000 ? 45 : 35)) // Adjusts node radius based on money of the person
+    .attr("id", (d,i) => ('node-'+i)) // Add node id to be used later            
     .call(d3.drag()
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended)
     )
-    .on("mouseover", enlargeNode)
-    .on("mouseout", revertNode)
+    .on("mouseover", zoomNode)
+    // .on("mouseout", revertNode)    
     ;
         
+  // node
+  //   .style("fill", "#cccccc")
+  //   .style("fill-opacity", "0")
+  //   .style("stroke", "#424242")
+  //   .style("stroke-width", "1px")
+  
   node
-    .style("fill", "#cccccc")
-    .style("fill-opacity", "0.9")
-    .style("stroke", "#424242")
-    .style("stroke-width", "1px")
-    
+    .each(function(d,i){
+        // const radius = document.querySelector("#node-"+d.id).getAttribute('r')
+        // createPieChart(15,[2+i, 4+i, 8+i, 10+i],'#node-'+d.id)    
+        //createPie(radius, radius, d.children, d.id)          
+        getPie(d3.select(this), d)
+    })
 
   // Labels
   var label = svg
     .append("g")
     .attr("class", "labels")
-    .selectAll("text")
-    .data(data.Nodes)
-    .enter()
-    .append("text")
-    .text((d) => d.name)
-    .attr("class", "label");
+    // .selectAll("text")
+    // .data(data.Nodes)
+    // .enter()
+    // .append("text")
+    // .text((d) => d.name)
+    // .attr("class", "label");
 
   label.style("text-anchor", "middle").style("font-size", "10px");
 
@@ -99,7 +113,6 @@ function createNetworkGraph(width, height, id, data) {
   // this is the function that is called at the beginning as the graph adjusts its elements
   // It is NOT the function that updates the coordinates when we drag nodes
   function ticked() {
-    console.log("ticked");
     link
       .attr("x1", function (d) {
         return d.source.x;
@@ -114,21 +127,30 @@ function createNetworkGraph(width, height, id, data) {
         return d.target.y;
       });
 
-    node
-      .attr("cx", function (d) {
-        return d.x + 5;
-      })
-      .attr("cy", function (d) {
-        return d.y - 3;
-      });
+    // node
+    //   .attr("cx", function (d) {
+    //     return d.x + 5;
+    //   })
+    //   .attr("cy", function (d) {
+    //     return d.y - 3;
+    //   });
 
-    label
-      .attr("x", function (d) {
-        return d.x;
+    d3.selectAll('circle')    
+      .attr('cx', function(d){
+        return d.x
       })
-      .attr("y", function (d) {
-        return d.y;
-      });
+    d3.selectAll('circle')    
+      .attr('cy', function(d){
+        return d.y
+      })
+
+    // label
+    //   .attr("x", function (d) {
+    //     return d.x;
+    //   })
+    //   .attr("y", function (d) {
+    //     return d.y;
+    //   });
   }
 
   simulation.nodes(data.Nodes)
@@ -161,13 +183,12 @@ function createNetworkGraph(width, height, id, data) {
   const zoomedNodes = []  
   function getInitialRadius(nodeID, radius){
     // Look for node in list
-    nodeInList = zoomedNodes.find(x => x.id === nodeID)
-    if(!nodeInList){ // If not found
+    if(!zoomedNodes.find(x => x.id === nodeID)){ // If not found
       let nodeInfo = {"id": nodeID, "initial_Radius": radius}
       zoomedNodes.push(nodeInfo)
       return radius
     }
-    else return nodeInList.initial_Radius
+    else return zoomedNodes.find(x => x.id === nodeID).initial_Radius
   }
 
   // Function to zoom in on Nodes
